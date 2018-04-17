@@ -38,7 +38,7 @@
           <children>
             <ToolBar prefWidth="570.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <ChoiceBox fx:id="leftChoiceBox" prefWidth="-1.0">
+                <ChoiceBox fx:id="leftChoiceBox" onAction="#leftChoiseBox_OnAction" prefWidth="-1.0">
                   <items>
                     <FXCollections fx:factory="observableArrayList">
                       <String fx:value="Item 1" />
@@ -78,7 +78,7 @@
           <children>
             <ToolBar prefWidth="570.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <ChoiceBox fx:id="rightChoiceBox">
+                <ChoiceBox fx:id="rightChoiceBox" onAction="#rightChoiseBox_OnAction">
                   <items>
                     <FXCollections fx:factory="observableArrayList">
                       <String fx:value="Item 1" />

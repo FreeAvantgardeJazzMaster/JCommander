@@ -113,6 +113,7 @@ public class Controller {
     }
 
     private void readAndDisplayPath(String root, TableView<FileObject> tableView){
+        tableView.getItems().clear();
         List<FileObject> fileObjectList = new ArrayList<>();
         File file = new File(root);
         File[] files = file.listFiles();
@@ -126,5 +127,12 @@ public class Controller {
             tableView.getItems().add(fo);
         }
     }
-    
+
+    public void leftChoiseBox_OnAction(ActionEvent event){
+        readAndDisplayPath(leftChoiceBox.getSelectionModel().getSelectedItem().toString(), leftTableView);
+    }
+
+    public void rightChoiseBox_OnAction(ActionEvent event){
+        readAndDisplayPath(rightChoiceBox.getSelectionModel().getSelectedItem().toString(), rightTableView);
+    }
 }

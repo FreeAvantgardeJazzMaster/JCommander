@@ -2,18 +2,19 @@ package sample;
 
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 
 import javafx.event.ActionEvent;
-import javafx.fxml.Initializable;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.MenuBar;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.net.URL;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import javax.swing.filechooser.FileSystemView;
+import java.io.File;
+import java.util.*;
 
 
 public class Controller {
@@ -22,13 +23,27 @@ public class Controller {
     private ResourceBundle resourceBundle;
 
     @FXML private Menu menuFile;
-    @FXML private Menu menuEdit;
     @FXML private Menu menuHelp;
     @FXML private MenuItem menuItemClose;
     @FXML private Menu menuHelpLang;
+    @FXML private Button leftMenuCopy;
+    @FXML private Button leftMenuMove;
+    @FXML private Button leftMenuDelete;
+    @FXML private Button rightMenuCopy;
+    @FXML private Button rightMenuMove;
+    @FXML private Button rightMenuDelete;
     @FXML private CheckMenuItem checkMenuItemPL;
     @FXML private CheckMenuItem checkMenuItemEN;
-
+    @FXML private ChoiceBox leftChoiceBox;
+    @FXML private ChoiceBox rightChoiceBox;
+    @FXML private TableColumn leftTableColumnName;
+    @FXML private TableColumn leftTableColumnSize;
+    @FXML private TableColumn leftTableColumnDate;
+    @FXML private TableColumn rightTableColumnName;
+    @FXML private TableColumn rightTableColumnSize;
+    @FXML private TableColumn rightTableColumnDate;
+    @FXML private TableView<FileObject> rightTableView;
+    @FXML private TableView<FileObject> leftTableView;
 
     public void MenuItemFileClose_OnClick(ActionEvent event){
         Platform.exit();
@@ -50,21 +65,66 @@ public class Controller {
 
     @FXML
     public void initialize() {
+        selectLanguage();
+        listRoots();
+        readAndDisplayPath(leftChoiceBox.getSelectionModel().getSelectedItem().toString(), leftTableView);
+        readAndDisplayPath(rightChoiceBox.getSelectionModel().getSelectedItem().toString(), rightTableView);
+
+    }
+
+    private void loadLang(String lang){
+        locale = new Locale(lang);
+        resourceBundle = ResourceBundle.getBundle("Resource", locale);
+        menuFile.setText(resourceBundle.getString("menuFile"));
+        menuHelp.setText(resourceBundle.getString("menuHelp"));
+        menuItemClose.setText(resourceBundle.getString("menuItemClose"));
+        menuHelpLang.setText(resourceBundle.getString("menuHelpLang"));
+        leftMenuCopy.setText(resourceBundle.getString("leftMenuCopy"));
+        leftMenuMove.setText(resourceBundle.getString("leftMenuMove"));
+        leftMenuDelete.setText(resourceBundle.getString("leftMenuDelete"));
+        rightMenuCopy.setText(resourceBundle.getString("rightMenuCopy"));
+        rightMenuMove.setText(resourceBundle.getString("rightMenuMove"));
+        rightMenuDelete.setText(resourceBundle.getString("rightMenuDelete"));
+        leftTableColumnName.setText(resourceBundle.getString("tableColumnName"));
+        leftTableColumnSize.setText(resourceBundle.getString("tableColumnSize"));
+        leftTableColumnDate.setText(resourceBundle.getString("tableColumnDate"));
+        rightTableColumnName.setText(resourceBundle.getString("tableColumnName"));
+        rightTableColumnSize.setText(resourceBundle.getString("tableColumnSize"));
+        rightTableColumnDate.setText(resourceBundle.getString("tableColumnDate"));
+    }
+
+    private void selectLanguage(){
         if (Locale.getDefault().toString().contains("PL"))
             checkMenuItemPL.setSelected(true);
         else if (Locale.getDefault().toString().contains("EN"))
             checkMenuItemEN.setSelected(true);
     }
-    private void loadLang(String lang){
-        locale = new Locale(lang);
-        resourceBundle = ResourceBundle.getBundle("Resource", locale);
-        menuFile.setText(resourceBundle.getString("menuFile"));
-        menuEdit.setText(resourceBundle.getString("menuEdit"));
-        menuHelp.setText(resourceBundle.getString("menuHelp"));
-        menuItemClose.setText(resourceBundle.getString("menuItemClose"));
-        menuHelpLang.setText(resourceBundle.getString("menuHelpLang"));
 
-
+    private void listRoots(){
+        ObservableList<String> rootsList = FXCollections.observableArrayList();
+        File[] roots = File.listRoots();
+        for (int i = 0; i < roots.length; i++){
+            rootsList.add(roots[i].toString());
+        }
+        leftChoiceBox.setItems(rootsList);
+        rightChoiceBox.setItems(rootsList);
+        leftChoiceBox.getSelectionModel().selectFirst();
+        rightChoiceBox.getSelectionModel().selectFirst();
     }
 
+    private void readAndDisplayPath(String root, TableView<FileObject> tableView){
+        List<FileObject> fileObjectList = new ArrayList<>();
+        File file = new File(root);
+        File[] files = file.listFiles();
+        for (File enrtyFile : files){
+            if(!enrtyFile.isDirectory())
+                fileObjectList.add(new FileObject(enrtyFile.getName(), enrtyFile.length()+"", new Date(enrtyFile.lastModified() * 1000)));
+            else
+                fileObjectList.add(new FileObject(enrtyFile.getName(), "<dir>", new Date(enrtyFile.lastModified() * 1000)));
+        }
+        for (FileObject fo : fileObjectList){
+            tableView.getItems().add(fo);
+        }
+    }
+    
 }

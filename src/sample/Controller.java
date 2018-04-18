@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -74,6 +75,8 @@ public class Controller {
 
     @FXML
     public void initialize() {
+        leftTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        rightTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         selectLanguage();
         listRoots();
     }
@@ -183,16 +186,20 @@ public class Controller {
         errorStage.show();
     }
 
-    public void leftTableView_OnMouseClicked(){
-        String name = leftTableView.getSelectionModel().getSelectedItem().getName();
-        String path = leftCurrentPath + name + "\\";
-        readAndDisplayPath(path, leftTableView);
+    public void leftTableView_OnMouseClicked(MouseEvent event){
+        if(event.getClickCount() == 2){
+            String name = leftTableView.getSelectionModel().getSelectedItem().getName();
+            String path = leftCurrentPath + name + "\\";
+            readAndDisplayPath(path, leftTableView);
+        }
     }
 
-    public void rightTableView_OnMouseClicked(){
-        String name = rightTableView.getSelectionModel().getSelectedItem().getName();
-        String path = rightCurrentPath + name + "\\";
-        readAndDisplayPath(path, rightTableView);
+    public void rightTableView_OnMouseClicked(MouseEvent event){
+        if(event.getClickCount() == 2){
+            String name = rightTableView.getSelectionModel().getSelectedItem().getName();
+            String path = rightCurrentPath + name + "\\";
+            readAndDisplayPath(path, rightTableView);
+        }
     }
 
     public void leftUpButton_onAction(){

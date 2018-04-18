@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.collections.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.control.CheckMenuItem?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="642.0" prefWidth="1148.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="sample.Controller">
+<AnchorPane prefHeight="642.0" prefWidth="1148.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
   <children>
     <MenuBar fx:id="menuBar" prefHeight="26.0" prefWidth="1148.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <menus>
-        <Menu mnemonicParsing="false" text="%menuFile" fx:id="menuFile">
+        <Menu fx:id="menuFile" mnemonicParsing="false" text="%menuFile">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#MenuItemFileClose_OnClick" text="%menuItemClose" fx:id="menuItemClose" />
+            <MenuItem fx:id="menuItemClose" mnemonicParsing="false" onAction="#MenuItemFileClose_OnClick" text="%menuItemClose" />
           </items>
         </Menu>
-        <Menu id="" mnemonicParsing="false" text="%menuHelp" fx:id="menuHelp">
+        <Menu id="" fx:id="menuHelp" mnemonicParsing="false" text="%menuHelp">
           <items>
-            <Menu mnemonicParsing="false" text="%menuHelpLang" fx:id="menuHelpLang">
+            <Menu fx:id="menuHelpLang" mnemonicParsing="false" text="%menuHelpLang">
               <items>
-                <CheckMenuItem mnemonicParsing="false" onAction="#setLanguage" selected="false" text="PL" fx:id="checkMenuItemPL" />
-                <CheckMenuItem mnemonicParsing="false" onAction="#setLanguage" text="EN" fx:id="checkMenuItemEN" />
+                <CheckMenuItem fx:id="checkMenuItemPL" mnemonicParsing="false" onAction="#setLanguage" selected="false" text="PL" />
+                <CheckMenuItem fx:id="checkMenuItemEN" mnemonicParsing="false" onAction="#setLanguage" text="EN" />
               </items>
             </Menu>
           </items>
@@ -47,25 +51,25 @@
                     </FXCollections>
                   </items>
                 </ChoiceBox>
-                <Button mnemonicParsing="false" text=".." />
+                <Button fx:id="leftUpButton" mnemonicParsing="false" text=".." onAction="#leftUpButton_onAction"/>
                 <Button fx:id="leftMenuCopy" mnemonicParsing="false" text="%leftMenuCopy" />
                 <Button fx:id="leftMenuMove" mnemonicParsing="false" text="%leftMenuMove" />
                 <Button fx:id="leftMenuDelete" mnemonicParsing="false" text="%leftMenuDelete" />
               </items>
             </ToolBar>
-            <TableView fx:id="leftTableView" prefHeight="583.0" prefWidth="571.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0" onMouseClicked="#leftTableView_OnMouseClicked">
+            <TableView fx:id="leftTableView" onMouseClicked="#leftTableView_OnMouseClicked" prefHeight="583.0" prefWidth="571.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0">
               <columns>
-                <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="200.0" resizable="true" text="%tableColumnName" fx:id="leftTableColumnName">
+                <TableColumn fx:id="leftTableColumnName" maxWidth="5000.0" minWidth="10.0" prefWidth="200.0" resizable="true" text="%tableColumnName">
                   <cellValueFactory>
                     <PropertyValueFactory property="name" />
                   </cellValueFactory>
                 </TableColumn>
-                <TableColumn maxWidth="5000.0" minWidth="2.0" prefWidth="150.0" text="%tableColumnSize" fx:id="leftTableColumnSize">
+                <TableColumn fx:id="leftTableColumnSize" maxWidth="5000.0" minWidth="2.0" prefWidth="150.0" text="%tableColumnSize">
                   <cellValueFactory>
                     <PropertyValueFactory property="size" />
                   </cellValueFactory>
                 </TableColumn>
-                <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="150.0" text="%tableColumnDate" fx:id="leftTableColumnDate">
+                <TableColumn fx:id="leftTableColumnDate" maxWidth="5000.0" minWidth="10.0" prefWidth="150.0" text="%tableColumnDate">
                   <cellValueFactory>
                     <PropertyValueFactory property="date" />
                   </cellValueFactory>
@@ -87,25 +91,25 @@
                     </FXCollections>
                   </items>
                 </ChoiceBox>
-                <Button mnemonicParsing="false" text=".." />
+                <Button fx:id="rightUpButton" mnemonicParsing="false" text=".." onAction="#rightUpButton_onAction"/>
                 <Button fx:id="rightMenuCopy" mnemonicParsing="false" text="%rightMenuCopy" />
                 <Button fx:id="rightMenuMove" mnemonicParsing="false" text="%rightMenuMove" />
                 <Button fx:id="rightMenuDelete" mnemonicParsing="false" text="%rightMenuDelete" />
               </items>
             </ToolBar>
-            <TableView fx:id="rightTableView" prefHeight="583.0" prefWidth="570.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0">
+            <TableView fx:id="rightTableView" prefHeight="583.0" prefWidth="570.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0" onMouseClicked="#rightTableView_OnMouseClicked">
               <columns>
-                <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="200.0" text="%tableColumnName" fx:id="rightTableColumnName">
+                <TableColumn fx:id="rightTableColumnName" maxWidth="5000.0" minWidth="10.0" prefWidth="200.0" text="%tableColumnName">
                   <cellValueFactory>
                     <PropertyValueFactory property="name" />
                   </cellValueFactory>
                 </TableColumn>
-                <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="150.0" text="%tableColumnSize" fx:id="rightTableColumnSize">
+                <TableColumn fx:id="rightTableColumnSize" maxWidth="5000.0" minWidth="10.0" prefWidth="150.0" text="%tableColumnSize">
                   <cellValueFactory>
                     <PropertyValueFactory property="size" />
                   </cellValueFactory>
                 </TableColumn>
-                <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="150.0" text="%tableColumnDate" fx:id="rightTableColumnDate">
+                <TableColumn fx:id="rightTableColumnDate" maxWidth="5000.0" minWidth="10.0" prefWidth="150.0" text="%tableColumnDate">
                   <cellValueFactory>
                     <PropertyValueFactory property="date" />
                   </cellValueFactory>

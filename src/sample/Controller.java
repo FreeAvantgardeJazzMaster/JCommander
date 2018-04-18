@@ -12,7 +12,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -52,6 +51,8 @@ public class Controller {
     @FXML private TableColumn rightTableColumnDate;
     @FXML private TableView<FileObject> rightTableView;
     @FXML private TableView<FileObject> leftTableView;
+    @FXML private Button leftUpButton;
+    @FXML private Button rightUpButton;
 
     public void MenuItemFileClose_OnClick(ActionEvent event){
         Platform.exit();
@@ -131,6 +132,10 @@ public class Controller {
         for (FileObject fo : fileObjectList){
             tableView.getItems().add(fo);
         }
+        if (tableView == leftTableView)
+            leftCurrentPath = file.getPath() + "\\";
+        else
+            rightCurrentPath = file.getPath() + "\\";
     }
 
     public void leftChoiceBox_OnAction(ActionEvent event){
@@ -179,7 +184,25 @@ public class Controller {
     }
 
     public void leftTableView_OnMouseClicked(){
-        leftTableView.getSelectionModel().getSelectedItem();
+        String name = leftTableView.getSelectionModel().getSelectedItem().getName();
+        String path = leftCurrentPath + name + "\\";
+        readAndDisplayPath(path, leftTableView);
+    }
+
+    public void rightTableView_OnMouseClicked(){
+        String name = rightTableView.getSelectionModel().getSelectedItem().getName();
+        String path = rightCurrentPath + name + "\\";
+        readAndDisplayPath(path, rightTableView);
+    }
+
+    public void leftUpButton_onAction(){
+        String path = leftCurrentPath + "..";
+        readAndDisplayPath(path, leftTableView);
+    }
+
+    public void rightUpButton_onAction(){
+        String path = rightCurrentPath + "..";
+        readAndDisplayPath(path, rightTableView);
     }
 
 }

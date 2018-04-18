@@ -2,17 +2,19 @@ package sample;
 
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 
 import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 
-import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.util.*;
 
@@ -21,6 +23,12 @@ public class Controller {
 
     private Locale locale;
     private ResourceBundle resourceBundle;
+
+    private String leftCurrentPath;
+    private String rightCurrentPath;
+
+    private int leftChoiceBoxLastSelected;
+    private int rightChoiceBoxLastSelected;
 
     @FXML private Menu menuFile;
     @FXML private Menu menuHelp;
@@ -67,9 +75,6 @@ public class Controller {
     public void initialize() {
         selectLanguage();
         listRoots();
-        readAndDisplayPath(leftChoiceBox.getSelectionModel().getSelectedItem().toString(), leftTableView);
-        readAndDisplayPath(rightChoiceBox.getSelectionModel().getSelectedItem().toString(), rightTableView);
-
     }
 
     private void loadLang(String lang){
@@ -113,7 +118,6 @@ public class Controller {
     }
 
     private void readAndDisplayPath(String root, TableView<FileObject> tableView){
-        tableView.getItems().clear();
         List<FileObject> fileObjectList = new ArrayList<>();
         File file = new File(root);
         File[] files = file.listFiles();
@@ -123,16 +127,59 @@ public class Controller {
             else
                 fileObjectList.add(new FileObject(enrtyFile.getName(), "<dir>", new Date(enrtyFile.lastModified() * 1000)));
         }
+        tableView.getItems().clear();
         for (FileObject fo : fileObjectList){
             tableView.getItems().add(fo);
         }
     }
 
-    public void leftChoiseBox_OnAction(ActionEvent event){
-        readAndDisplayPath(leftChoiceBox.getSelectionModel().getSelectedItem().toString(), leftTableView);
+    public void leftChoiceBox_OnAction(ActionEvent event){
+        try{
+            readAndDisplayPath(leftChoiceBox.getSelectionModel().getSelectedItem().toString(), leftTableView);
+            leftChoiceBoxLastSelected = leftChoiceBox.getSelectionModel().getSelectedIndex();
+        }catch(Exception e) {
+            e.printStackTrace();
+            try {
+                showReadErrorMessage(leftChoiceBox.getSelectionModel().getSelectedItem().toString());
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+            leftChoiceBox.getSelectionModel().select(leftChoiceBoxLastSelected);
+        }
     }
 
-    public void rightChoiseBox_OnAction(ActionEvent event){
-        readAndDisplayPath(rightChoiceBox.getSelectionModel().getSelectedItem().toString(), rightTableView);
+    public void rightChoiceBox_OnAction(ActionEvent event){
+        try{
+            readAndDisplayPath(rightChoiceBox.getSelectionModel().getSelectedItem().toString(), rightTableView);
+            rightChoiceBoxLastSelected = rightChoiceBox.getSelectionModel().getSelectedIndex();
+        }catch(Exception e) {
+            e.printStackTrace();
+            try {
+                showReadErrorMessage(rightChoiceBox.getSelectionModel().getSelectedItem().toString());
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+            rightChoiceBox.getSelectionModel().select(rightChoiceBoxLastSelected);
+        }
     }
+
+    private void showReadErrorMessage(String path) throws Exception{
+        Stage errorStage = new Stage();
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("Resource");
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("readError.fxml"));
+        loader.setResources(resourceBundle);
+        loader.load();
+        ErrorController errorController = loader.getController();
+        errorController.setPathInLabel(path);
+        Parent root = loader.getRoot();
+        errorStage.setTitle(resourceBundle.getString("error"));
+        errorStage.setScene(new Scene(root));
+        errorStage.show();
+    }
+
+    public void leftTableView_OnMouseClicked(){
+        leftTableView.getSelectionModel().getSelectedItem();
+    }
+
 }

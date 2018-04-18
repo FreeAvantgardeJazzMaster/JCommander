@@ -38,7 +38,7 @@
           <children>
             <ToolBar prefWidth="570.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <ChoiceBox fx:id="leftChoiceBox" onAction="#leftChoiseBox_OnAction" prefWidth="-1.0">
+                <ChoiceBox fx:id="leftChoiceBox" onAction="#leftChoiceBox_OnAction" prefWidth="-1.0">
                   <items>
                     <FXCollections fx:factory="observableArrayList">
                       <String fx:value="Item 1" />
@@ -53,7 +53,7 @@
                 <Button fx:id="leftMenuDelete" mnemonicParsing="false" text="%leftMenuDelete" />
               </items>
             </ToolBar>
-            <TableView fx:id="leftTableView" prefHeight="583.0" prefWidth="571.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0">
+            <TableView fx:id="leftTableView" prefHeight="583.0" prefWidth="571.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0" onMouseClicked="#leftTableView_OnMouseClicked">
               <columns>
                 <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="200.0" resizable="true" text="%tableColumnName" fx:id="leftTableColumnName">
                   <cellValueFactory>
@@ -78,7 +78,7 @@
           <children>
             <ToolBar prefWidth="570.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <ChoiceBox fx:id="rightChoiceBox" onAction="#rightChoiseBox_OnAction">
+                <ChoiceBox fx:id="rightChoiceBox" onAction="#rightChoiceBox_OnAction">
                   <items>
                     <FXCollections fx:factory="observableArrayList">
                       <String fx:value="Item 1" />

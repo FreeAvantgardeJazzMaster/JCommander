@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.*;
 
+import org.apache.commons.io.FileUtils;
+
 
 public class Controller {
 
@@ -210,6 +212,10 @@ public class Controller {
     public void rightUpButton_onAction(){
         String path = rightCurrentPath + "..";
         readAndDisplayPath(path, rightTableView);
+    }
+
+    public void leftCopyButton_onAction(){
+        
     }
 
 }

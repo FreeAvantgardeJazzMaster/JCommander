@@ -54,7 +54,7 @@
                 <Button fx:id="leftUpButton" mnemonicParsing="false" text=".." onAction="#leftUpButton_onAction"/>
                 <Button fx:id="leftMenuCopy" mnemonicParsing="false" text="%leftMenuCopy" onAction="#leftCopyButton_onAction" />
                 <Button fx:id="leftMenuMove" mnemonicParsing="false" text="%leftMenuMove" />
-                <Button fx:id="leftMenuDelete" mnemonicParsing="false" text="%leftMenuDelete" />
+                <Button fx:id="leftMenuDelete" mnemonicParsing="false" text="%leftMenuDelete" onAction="#leftDeleteButton_onAction" />
               </items>
             </ToolBar>
             <TableView fx:id="leftTableView" onMouseClicked="#leftTableView_OnMouseClicked" prefHeight="583.0" prefWidth="571.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0">

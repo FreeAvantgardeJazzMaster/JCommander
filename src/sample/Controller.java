@@ -107,10 +107,15 @@ public class Controller {
     }
 
     private void selectLanguage(){
-        if (Locale.getDefault().toString().contains("PL"))
+        if (Locale.getDefault().toString().contains("PL")){
             checkMenuItemPL.setSelected(true);
-        else if (Locale.getDefault().toString().contains("EN"))
+            loadLang("PL");
+        }
+        else if (Locale.getDefault().toString().contains("EN")){
             checkMenuItemEN.setSelected(true);
+            loadLang("EN");
+        }
+
     }
 
     private void listRoots(){
@@ -217,8 +222,21 @@ public class Controller {
     }
 
     public void leftCopyButton_onAction(){
+        new Thread(){
+            @Override
+            public void run() {
+                copyFile(leftTableView, leftCurrentPath, rightCurrentPath);
+            }
+        }.start();
+    }
+
+    public void leftDeleteButton_onAction(){
+        deleteFile(leftTableView, leftCurrentPath);
+    }
+
+    private void copyFile(TableView tableView, String leftCurrentPath, String rightCurrentPath){
         FileObject fileObject;
-        if ((fileObject = leftTableView.getSelectionModel().getSelectedItem()) != null){
+        if ((fileObject = (FileObject) tableView.getSelectionModel().getSelectedItem()) != null){
             File source = new File(leftCurrentPath + fileObject.getName());
             File dest = new File(rightCurrentPath + fileObject.getName());
             try {
@@ -232,7 +250,31 @@ public class Controller {
                 e.printStackTrace();
             }
         }
-
     }
 
+    private void deleteFile(TableView tableView, String currentPath){
+        FileObject fileObject;
+        if ((fileObject = (FileObject) tableView.getSelectionModel().getSelectedItem()) != null){
+            File source = new File(currentPath + fileObject.getName());
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle(resourceBundle.getString("alertDeleteTitle"));
+            alert.setHeaderText(resourceBundle.getString("alertDeleteHeader"));
+            alert.setContentText(resourceBundle.getString("alertDeleteContent") + "\n" + fileObject.getName());
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == ButtonType.OK) {
+                // ... user chose OK
+                try {
+                    if (!source.isDirectory()) {
+                        FileUtils.forceDelete(source);
+                    } else {
+                        FileUtils.deleteDirectory(source);
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

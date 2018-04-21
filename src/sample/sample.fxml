@@ -52,7 +52,7 @@
                   </items>
                 </ChoiceBox>
                 <Button fx:id="leftUpButton" mnemonicParsing="false" text=".." onAction="#leftUpButton_onAction"/>
-                <Button fx:id="leftMenuCopy" mnemonicParsing="false" text="%leftMenuCopy" />
+                <Button fx:id="leftMenuCopy" mnemonicParsing="false" text="%leftMenuCopy" onAction="#leftCopyButton_onAction" />
                 <Button fx:id="leftMenuMove" mnemonicParsing="false" text="%leftMenuMove" />
                 <Button fx:id="leftMenuDelete" mnemonicParsing="false" text="%leftMenuDelete" />
               </items>

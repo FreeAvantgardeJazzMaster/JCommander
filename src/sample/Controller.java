@@ -16,6 +16,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
@@ -215,7 +217,22 @@ public class Controller {
     }
 
     public void leftCopyButton_onAction(){
-        
+        FileObject fileObject;
+        if ((fileObject = leftTableView.getSelectionModel().getSelectedItem()) != null){
+            File source = new File(leftCurrentPath + fileObject.getName());
+            File dest = new File(rightCurrentPath + fileObject.getName());
+            try {
+                if (!source.isDirectory()) {
+                    FileUtils.copyFile(source, dest, true);
+                }
+                else{
+                    FileUtils.copyDirectory(source, dest, true);
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
     }
 
 }

@@ -240,11 +240,22 @@ public class Controller {
             File source = new File(leftCurrentPath + fileObject.getName());
             File dest = new File(rightCurrentPath + fileObject.getName());
             try {
-                if (!source.isDirectory()) {
-                    FileUtils.copyFile(source, dest, true);
+                if(source.toPath() != dest.toPath()){
+                    if (!source.isDirectory()) {
+                        FileUtils.copyFile(source, dest, true);
+                    }
+                    else{
+                        FileUtils.copyDirectory(source, dest, true);
+                    }
                 }
                 else{
-                    FileUtils.copyDirectory(source, dest, true);
+                    dest = makeUniqueFilePath(fileObject, rightCurrentPath);
+                    if (!source.isDirectory()) {
+                        FileUtils.copyFile(source, dest, true);
+                    }
+                    else{
+                        FileUtils.copyDirectory(source, dest, true);
+                    }
                 }
             }catch(IOException e){
                 e.printStackTrace();
@@ -276,5 +287,24 @@ public class Controller {
                 }
             }
         }
+    }
+
+    private File makeUniqueFilePath(FileObject fileObject, String destPath){
+        String newFileName = fileObject.getName();
+        File destFile = new File(destPath);
+        File[] files = destFile.listFiles();
+        boolean unigue = false;
+        int i = 1;
+        do{
+            unigue = true;
+            for (File file : files){
+                if (newFileName.equals(file.getName())){
+                    newFileName = "(" + i + ")" + fileObject.getName();
+                    unigue = false;
+                }
+            }
+            i++;
+        }while(!unigue);
+        return new File(destPath + newFileName);
     }
 }

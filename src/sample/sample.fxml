@@ -99,9 +99,9 @@
                   </items>
                 </ChoiceBox>
                 <Button fx:id="rightUpButton" mnemonicParsing="false" onAction="#rightUpButton_onAction" text=".." />
-                <Button fx:id="rightMenuCopy" mnemonicParsing="false" text="%rightMenuCopy" />
+                <Button fx:id="rightMenuCopy" mnemonicParsing="false" text="%rightMenuCopy" onAction = "#rightCopyButton_onAction"/>
                 <Button fx:id="rightMenuMove" mnemonicParsing="false" text="%rightMenuMove" />
-                <Button fx:id="rightMenuDelete" mnemonicParsing="false" text="%rightMenuDelete" />
+                <Button fx:id="rightMenuDelete" mnemonicParsing="false" text="%rightMenuDelete" onAction="#rightDeleteButton_onAction" />
               </items>
             </ToolBar>
             <TableView fx:id="rightTableView" onMouseClicked="#rightTableView_OnMouseClicked" prefHeight="558.0" prefWidth="570.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="56.0">

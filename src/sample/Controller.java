@@ -155,27 +155,30 @@ public class Controller {
         List<FileObject> fileObjectList = new ArrayList<>();
         File file = new File(path);
         File[] files = file.listFiles();
-        for (File entryFile : files){
-            if(!entryFile.isDirectory())
-                fileObjectList.add(new FileObject(entryFile.getName(), new Long(entryFile.length()), new Date(entryFile.lastModified() * 1000), FilenameUtils.getExtension(entryFile.getName())));
-            else
-                fileObjectList.add(new FileObject(entryFile.getName(),  null ,new Date(entryFile.lastModified() * 1000), "<dir>"));
-        }
-        tableView.getItems().clear();
-        for (FileObject fo : fileObjectList){
-            tableView.getItems().add(fo);
-        }
-        try {
-            if (tableView == leftTableView) {
-                leftCurrentPath = file.getCanonicalPath() + "\\";
-                leftCurrentPathField.setText(leftCurrentPath);
-            } else {
-                rightCurrentPath = file.getCanonicalPath() + "\\";
-                rightCurrentPathField.setText(rightCurrentPath);
+        if (files != null) {
+            for (File entryFile : files) {
+                if (!entryFile.isDirectory())
+                    fileObjectList.add(new FileObject(entryFile.getName(), new Long(entryFile.length()), new Date(entryFile.lastModified() * 1000), FilenameUtils.getExtension(entryFile.getName())));
+                else
+                    fileObjectList.add(new FileObject(entryFile.getName(), null, new Date(entryFile.lastModified() * 1000), "<dir>"));
             }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+            tableView.getItems().clear();
+            for (FileObject fo : fileObjectList) {
+                tableView.getItems().add(fo);
+            }
+            try {
+                if (tableView == leftTableView) {
+                    leftCurrentPath = file.getCanonicalPath() + "\\";
+                    leftCurrentPathField.setText(leftCurrentPath);
+                } else {
+                    rightCurrentPath = file.getCanonicalPath() + "\\";
+                    rightCurrentPathField.setText(rightCurrentPath);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }else
+            tableView.getItems().clear();
     }
 
     public void leftChoiceBox_OnAction(ActionEvent event){
@@ -250,43 +253,57 @@ public class Controller {
     }
 
     public void leftCopyButton_onAction(){
-        copyFile(leftTableView, leftCurrentPath, rightCurrentPath);
+        copyFiles(leftTableView, leftCurrentPath, rightCurrentPath);
+    }
+
+    public void rightCopyButton_onAction(){
+        copyFiles(rightTableView, rightCurrentPath, leftCurrentPath);
     }
 
     public void leftDeleteButton_onAction(){
-        deleteFile(leftTableView, leftCurrentPath);
+        deleteFiles(leftTableView, leftCurrentPath);
     }
 
-    private void copyFile(TableView tableView, String leftCurrentPath, String rightCurrentPath){
-        FileObject fileObject;
-        if ((fileObject = (FileObject) tableView.getSelectionModel().getSelectedItem()) != null){
-            File source = new File(leftCurrentPath + fileObject.getName());
-            File dest = new File(rightCurrentPath + fileObject.getName());
-            try {
-                if(!source.getCanonicalPath().toString().equals(dest.getCanonicalPath().toString())){
-                    if(isFileAlreadyThere(fileObject, new File(rightCurrentPath))) {
-                        String result = overwriteOrRename(fileObject);
-                        if (result.equals("O")) {
-                            copy(source, dest);
-                        } else if (result.equals("R")) {
-                            dest = getUniqueFilePath(fileObject, rightCurrentPath);
-                            copy(source, dest);
-                        }
-                    }else {
-                        copy(source, dest);
+    public void rightDeleteButton_onAction(){
+        deleteFiles(rightTableView, rightCurrentPath);
+    }
+
+    private void copyFiles(TableView tableView, String fromPath, String toPath){
+        List<FileObject> fileObjects;
+        List<FileToCopy> filesToCopy = new ArrayList<>();
+        File source, dest;
+        if((fileObjects = tableView.getSelectionModel().getSelectedItems()) != null){
+            for(FileObject fileObject : fileObjects){
+                source = new File(fromPath + fileObject.getName());
+                dest = new File(toPath + fileObject.getName());
+                try {
+                    if (source.getCanonicalPath().toString().equals(dest.getCanonicalPath().toString())) {
+                        dest = getUniqueFilePath(fileObject, toPath);
+                        filesToCopy.add(new FileToCopy(fileObject.getName(), source, dest));
                     }
+                    else{
+                        if(isFileAlreadyThere(fileObject, new File(toPath))) {
+                            String result = overwriteOrRename(fileObject);
+                            if (result.equals("O")) {
+                                filesToCopy.add(new FileToCopy(fileObject.getName(), source, dest));
+                            } else if (result.equals("R")) {
+                                dest = getUniqueFilePath(fileObject, toPath);
+                                filesToCopy.add(new FileToCopy(fileObject.getName(), source, dest));
+                            }
+                        }else {
+                            filesToCopy.add(new FileToCopy(fileObject.getName(), source, dest));;
+                        }
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-                else{
-                    dest = getUniqueFilePath(fileObject, rightCurrentPath);
-                    copy(source, dest);
-                }
-            }catch(IOException e){
-              e.printStackTrace();
             }
+            if (!filesToCopy.isEmpty())
+                executeCopy(filesToCopy);
         }
     }
 
-    private void copy(File source, File dest){
+    private void executeCopy(List<FileToCopy> filesToCopy){
         try {
             showWaitingBox(0);
         }catch (Exception e){
@@ -295,12 +312,14 @@ public class Controller {
         copyTask = new Task() {
             @Override
             protected Void call() throws Exception {
-                Thread.sleep(2000);
-                if (!source.isDirectory()) {
-                        FileUtils.copyFile(source, dest, true);
+                Thread.sleep(1000);
+                for (FileToCopy fileToCopy : filesToCopy){
+                    if (!fileToCopy.getSource().isDirectory()) {
+                        FileUtils.copyFile(fileToCopy.getSource(), fileToCopy.getDest(), true);
                     } else {
-                        FileUtils.copyDirectory(source, dest, true);
+                        FileUtils.copyDirectory(fileToCopy.getSource(), fileToCopy.getDest(), true);
                     }
+                }
                 return null;
             }
         };
@@ -316,38 +335,55 @@ public class Controller {
         });
     }
 
-    private void deleteFile(TableView tableView, String currentPath){
-        FileObject fileObject;
-        if ((fileObject = (FileObject) tableView.getSelectionModel().getSelectedItem()) != null){
-            File source = new File(currentPath + fileObject.getName());
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(resourceBundle.getString("alertDeleteTitle"));
-            alert.setHeaderText(resourceBundle.getString("alertDeleteHeader"));
-            alert.setContentText(resourceBundle.getString("alertDeleteContent") + "\n" + fileObject.getName());
+    private void deleteFiles(TableView tableView, String currentPath){
+        List<FileObject> fileObjects;
+        List<FileToDelete> filesToDelete = new ArrayList<>();
+        File source;
+        if ((fileObjects =  tableView.getSelectionModel().getSelectedItems()) != null){
+            for (FileObject fileObject : fileObjects) {
+                source = new File(currentPath + fileObject.getName());
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle(resourceBundle.getString("alertDeleteTitle"));
+                alert.setHeaderText(resourceBundle.getString("alertDeleteHeader"));
+                alert.setContentText(resourceBundle.getString("alertDeleteContent") + "\n" + fileObject.getName());
 
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() == ButtonType.OK) {
-                    delete(source);
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK) {
+                    filesToDelete.add(new FileToDelete(fileObject.getName(), source));
+                }
             }
+            if (!filesToDelete.isEmpty())
+                executeDelete(filesToDelete);
         }
     }
 
-    private void delete(File source){
+    private void executeDelete(List<FileToDelete> filesToDelete){
+        try {
+            showWaitingBox(1);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         deleteTask = new Task() {
             @Override
             protected Void call() throws Exception {
-                if (!source.isDirectory()) {
-                    FileUtils.forceDelete(source);
-                } else {
-                    FileUtils.deleteDirectory(source);
-                }
                 Thread.sleep(1000);
+                for (FileToDelete fileToDelete : filesToDelete) {
+                    if (!fileToDelete.getSource().isDirectory()) {
+                        FileUtils.forceDelete(fileToDelete.getSource());
+                    } else {
+                        FileUtils.deleteDirectory(fileToDelete.getSource());
+                    }
+                }
                 return null;
             }
         };
         new Thread(deleteTask).start();
 
         deleteTask.setOnSucceeded(e -> {
+            waitingBoxStage.close();
+            refreshTableViews();
+        });
+        deleteTask.setOnCancelled(e -> {
             refreshTableViews();
         });
     }
@@ -383,9 +419,9 @@ public class Controller {
         alert.setHeaderText(resourceBundle.getString("overwriteHeader"));
         alert.setContentText(resourceBundle.getString("overwriteContent") + "\n" + fileObject.getName());
 
-        ButtonType buttonTypeOne = new ButtonType("Overwrite");
-        ButtonType buttonTypeTwo = new ButtonType("Rename");
-        ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType buttonTypeOne = new ButtonType(resourceBundle.getString("overwrite"));
+        ButtonType buttonTypeTwo = new ButtonType(resourceBundle.getString("rename"));
+        ButtonType buttonTypeCancel = new ButtonType(resourceBundle.getString("cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
         alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo, buttonTypeCancel);
         Optional<ButtonType> result = alert.showAndWait();

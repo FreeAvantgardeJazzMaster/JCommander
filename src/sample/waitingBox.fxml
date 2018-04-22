@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="175.0" prefWidth="450.999977929685" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="sample.WaitingBox">
+  <children>
+    <Pane opacity="1.0" prefHeight="113.00009999999747" prefWidth="451.0" style="background-color: gray;" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <children>
+        <Label fx:id="waitingBoxLabel" layoutX="14.0" layoutY="14.0" text="Copy file..." textAlignment="LEFT" underline="false" wrapText="false">
+          <font>
+            <Font size="30.0" />
+          </font>
+        </Label>
+        <ProgressBar fx:id="waitingBoxBar" layoutX="14.0" layoutY="76.0" prefHeight="24.0" prefWidth="223.0" progress="-1.0" />
+      </children>
+    </Pane>
+    <Button fx:id="waitingBoxCancelButton" onAction="#setWaitingBoxCancelButton_onAction" mnemonicParsing="false" prefHeight="24.0" prefWidth="78.0" text="%waitingBoxCancelButton" AnchorPane.bottomAnchor="13.0" AnchorPane.rightAnchor="22.0" />
+  </children>
+</AnchorPane>

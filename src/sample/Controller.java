@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 
 import javafx.event.ActionEvent;
@@ -19,7 +18,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
@@ -39,6 +37,8 @@ public class Controller {
 
     private Task copyTask;
     private Task deleteTask;
+
+    private Stage waitingBoxStage;
 
     @FXML private Menu menuFile;
     @FXML private Menu menuHelp;
@@ -83,7 +83,7 @@ public class Controller {
 
         leftTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         rightTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        selectLanguage();
+        selectDefaultLanguage();
         listRoots();
     }
 
@@ -128,7 +128,7 @@ public class Controller {
         rightTableColumnType.setText(resourceBundle.getString("tableColumnType"));
     }
 
-    private void selectLanguage(){
+    private void selectDefaultLanguage(){
         if (Locale.getDefault().toString().contains("PL")){
             checkMenuItemPL.setSelected(true);
             loadLang("PL");
@@ -137,7 +137,6 @@ public class Controller {
             checkMenuItemEN.setSelected(true);
             loadLang("EN");
         }
-
     }
 
     private void listRoots(){
@@ -288,11 +287,16 @@ public class Controller {
     }
 
     private void copy(File source, File dest){
-
+        try {
+            showWaitingBox(0);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         copyTask = new Task() {
             @Override
             protected Void call() throws Exception {
-                    if (!source.isDirectory()) {
+                Thread.sleep(2000);
+                if (!source.isDirectory()) {
                         FileUtils.copyFile(source, dest, true);
                     } else {
                         FileUtils.copyDirectory(source, dest, true);
@@ -303,13 +307,13 @@ public class Controller {
         new Thread(copyTask).start();
 
         copyTask.setOnSucceeded(e -> {
+            waitingBoxStage.close();
             refreshTableViews();
         });
-    }
 
-    private void refreshTableViews() {
-        readAndDisplayPath(leftCurrentPath, leftTableView);
-        readAndDisplayPath(rightCurrentPath, rightTableView);
+        copyTask.setOnCancelled(e -> {
+            refreshTableViews();
+        });
     }
 
     private void deleteFile(TableView tableView, String currentPath){
@@ -337,6 +341,7 @@ public class Controller {
                 } else {
                     FileUtils.deleteDirectory(source);
                 }
+                Thread.sleep(1000);
                 return null;
             }
         };
@@ -345,6 +350,11 @@ public class Controller {
         deleteTask.setOnSucceeded(e -> {
             refreshTableViews();
         });
+    }
+
+    private void refreshTableViews() {
+        readAndDisplayPath(leftCurrentPath, leftTableView);
+        readAndDisplayPath(rightCurrentPath, rightTableView);
     }
 
     private File getUniqueFilePath(FileObject fileObject, String destPath){
@@ -399,5 +409,54 @@ public class Controller {
             }
         }
         return isThere;
+    }
+
+    //_____________________
+    //taskTypes:
+    //0 - copy
+    //1 - delete
+    //2 - move
+    //_____________________
+    private void showWaitingBox(int taskType) throws Exception{
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("waitingBox.fxml"));
+        loader.setResources(resourceBundle);
+        loader.load();
+
+        waitingBoxStage = new Stage();
+        waitingBoxStage.setTitle(resourceBundle.getString("waitingBoxTitle"));
+        waitingBoxStage.setScene(new Scene(loader.getRoot()));
+        waitingBoxStage.show();
+
+        WaitingBox waitingBox = loader.getController();
+
+        waitingBox.setController(this);
+        waitingBox.setTaskType(taskType);
+
+        String label = null;
+        switch (taskType){
+            case 0:
+                label = resourceBundle.getString("waitingBoxLabelCopy");
+                break;
+            case 1:
+                label = resourceBundle.getString("waitingBoxLabelDelete");
+                break;
+            case 2:
+                label = resourceBundle.getString("waitingBoxLabelMove");
+                break;
+        }
+
+        waitingBox.getWaitingBoxLabel().setText(label);
+        waitingBox.getWaitingBoxCancelButton().setText(resourceBundle.getString("waitingBoxCancelButton"));
+    }
+
+    public void cancelTask(int taskType){
+        if (taskType == 0)
+            copyTask.cancel();
+        else if (taskType == 1)
+            deleteTask.cancel();
+        //else if(taskType == 2)
+                //moveTask.cancel();
+
     }
 }

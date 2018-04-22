@@ -58,7 +58,7 @@
                 </ChoiceBox>
                 <Button fx:id="leftUpButton" mnemonicParsing="false" onAction="#leftUpButton_onAction" text=".." />
                 <Button fx:id="leftMenuCopy" mnemonicParsing="false" onAction="#leftCopyButton_onAction" text="%leftMenuCopy" />
-                <Button fx:id="leftMenuMove" mnemonicParsing="false" text="%leftMenuMove" />
+                <Button fx:id="leftMenuMove" mnemonicParsing="false" text="%leftMenuMove" onAction="#leftMoveButton_onAction"/>
                 <Button fx:id="leftMenuDelete" mnemonicParsing="false" onAction="#leftDeleteButton_onAction" text="%leftMenuDelete" />
               </items>
             </ToolBar>
@@ -100,7 +100,7 @@
                 </ChoiceBox>
                 <Button fx:id="rightUpButton" mnemonicParsing="false" onAction="#rightUpButton_onAction" text=".." />
                 <Button fx:id="rightMenuCopy" mnemonicParsing="false" text="%rightMenuCopy" onAction = "#rightCopyButton_onAction"/>
-                <Button fx:id="rightMenuMove" mnemonicParsing="false" text="%rightMenuMove" />
+                <Button fx:id="rightMenuMove" mnemonicParsing="false" text="%rightMenuMove" onAction="#rightMoveButton_onAction"/>
                 <Button fx:id="rightMenuDelete" mnemonicParsing="false" text="%rightMenuDelete" onAction="#rightDeleteButton_onAction" />
               </items>
             </ToolBar>

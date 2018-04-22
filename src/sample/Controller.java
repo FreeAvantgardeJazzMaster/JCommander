@@ -40,6 +40,7 @@ public class Controller {
 
     private Task copyTask;
     private Task deleteTask;
+    private Task moveTask;
 
     private Stage waitingBoxStage;
 
@@ -274,6 +275,14 @@ public class Controller {
         deleteFiles(rightTableView, rightCurrentPath);
     }
 
+    public void leftMoveButton_onAction(){
+        moveFiles(leftTableView, leftCurrentPath, rightCurrentPath);
+    }
+
+    public void rightMoveButton_onAction(){
+        moveFiles(rightTableView, rightCurrentPath, leftCurrentPath);
+    }
+
     private void copyFiles(TableView tableView, String fromPath, String toPath){
         List<FileObject> fileObjects;
         List<FileToCopy> filesToCopy = new ArrayList<>();
@@ -397,6 +406,74 @@ public class Controller {
         deleteTask.setOnCancelled(e -> {
             refreshTableViews();
         });
+    }
+
+    private void moveFiles(TableView tableView, String fromPath, String toPath){
+        List<FileObject> fileObjects;
+        List<FileToCopy> filesToMove = new ArrayList<>();
+        File source, dest;
+        if((fileObjects = tableView.getSelectionModel().getSelectedItems()) != null){
+            for(FileObject fileObject : fileObjects){
+                source = new File(fromPath + fileObject.getName());
+                dest = new File(toPath + fileObject.getName());
+                try {
+                    if (source.getCanonicalPath().toString().equals(dest.getCanonicalPath().toString())) {
+                        dest = getUniqueFilePath(fileObject, toPath);
+                        filesToMove.add(new FileToCopy(fileObject.getName(), source, dest));
+                    }
+                    else{
+                        if(isFileAlreadyThere(fileObject, new File(toPath))) {
+                            String result = overwriteOrRename(fileObject);
+                            if (result.equals("O")) {
+                                filesToMove.add(new FileToCopy(fileObject.getName(), source, dest));
+                            } else if (result.equals("R")) {
+                                dest = getUniqueFilePath(fileObject, toPath);
+                                filesToMove.add(new FileToCopy(fileObject.getName(), source, dest));
+                            }
+                        }else {
+                            filesToMove.add(new FileToCopy(fileObject.getName(), source, dest));;
+                        }
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            if (!filesToMove.isEmpty())
+                executeMove(filesToMove);
+        }
+    }
+
+    private void executeMove(List<FileToCopy> filesToMove){
+        try {
+            showWaitingBox(2);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        moveTask = new Task() {
+            @Override
+            protected Void call() throws Exception {
+                Thread.sleep(1000);
+                for (FileToCopy fileToMove : filesToMove){
+                    if (!fileToMove.getSource().isDirectory()) {
+                        FileUtils.moveFile(fileToMove.getSource(), fileToMove.getDest());
+                    } else {
+                        FileUtils.moveDirectory(fileToMove.getSource(), fileToMove.getDest());
+                    }
+                }
+                return null;
+            }
+        };
+        new Thread(moveTask).start();
+
+        moveTask.setOnSucceeded(e -> {
+            waitingBoxStage.close();
+            refreshTableViews();
+        });
+
+        moveTask.setOnCancelled(e -> {
+            refreshTableViews();
+        });
+
     }
 
     private void refreshTableViews() {

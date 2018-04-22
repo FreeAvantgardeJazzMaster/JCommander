@@ -4,8 +4,9 @@ import java.util.Date;
 
 public class FileObject {
     private String name;
-    private String size;
+    private Long size;
     private Date date;
+    private String type;
 
     public String getName() {
         return name;
@@ -15,7 +16,7 @@ public class FileObject {
         return date;
     }
 
-    public String getSize() {
+    public Long getSize() {
         return size;
     }
 
@@ -27,13 +28,22 @@ public class FileObject {
         this.name = name;
     }
 
-    public void setSize(String size) {
+    public void setSize(Long size) {
         this.size = size;
     }
 
-    public FileObject(String name, String size, Date date){
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public FileObject(String name, Long size, Date date, String type){
         setDate(date);
         setName(name);
         setSize(size);
+        setType(type);
     }
 }

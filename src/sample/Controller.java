@@ -4,6 +4,7 @@ package sample;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 
@@ -12,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
@@ -21,6 +23,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 
 public class Controller {
@@ -33,6 +36,9 @@ public class Controller {
 
     private int leftChoiceBoxLastSelected;
     private int rightChoiceBoxLastSelected;
+
+    private Task copyTask;
+    private Task deleteTask;
 
     @FXML private Menu menuFile;
     @FXML private Menu menuHelp;
@@ -48,22 +54,44 @@ public class Controller {
     @FXML private CheckMenuItem checkMenuItemEN;
     @FXML private ChoiceBox leftChoiceBox;
     @FXML private ChoiceBox rightChoiceBox;
-    @FXML private TableColumn leftTableColumnName;
-    @FXML private TableColumn leftTableColumnSize;
-    @FXML private TableColumn leftTableColumnDate;
-    @FXML private TableColumn rightTableColumnName;
-    @FXML private TableColumn rightTableColumnSize;
-    @FXML private TableColumn rightTableColumnDate;
+    @FXML private TableColumn<FileObject, String> leftTableColumnName;
+    @FXML private TableColumn<FileObject, Long> leftTableColumnSize;
+    @FXML private TableColumn<FileObject, Date> leftTableColumnDate;
+    @FXML private TableColumn<FileObject, String> leftTableColumnType;
+    @FXML private TableColumn<FileObject, String> rightTableColumnName;
+    @FXML private TableColumn<FileObject, Long> rightTableColumnSize;
+    @FXML private TableColumn<FileObject, Date> rightTableColumnDate;
+    @FXML private TableColumn<FileObject, String> rightTableColumnType;
     @FXML private TableView<FileObject> rightTableView;
     @FXML private TableView<FileObject> leftTableView;
     @FXML private Button leftUpButton;
     @FXML private Button rightUpButton;
+    @FXML private TextField leftCurrentPathField;
+    @FXML private TextField rightCurrentPathField;
 
-    public void MenuItemFileClose_OnClick(ActionEvent event){
+
+    @FXML
+    public void initialize() {
+        leftTableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        leftTableColumnDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        leftTableColumnSize.setCellValueFactory(new PropertyValueFactory<>("size"));
+        leftTableColumnType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        rightTableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        rightTableColumnDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        rightTableColumnSize.setCellValueFactory(new PropertyValueFactory<>("size"));
+        rightTableColumnType.setCellValueFactory(new PropertyValueFactory<>("type"));
+
+        leftTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        rightTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        selectLanguage();
+        listRoots();
+    }
+
+    public void menuItemFileClose_onAction(ActionEvent event){
         Platform.exit();
     }
 
-    public void setLanguage(ActionEvent event){
+    public void checkMenuItem_onAction(ActionEvent event){
         CheckMenuItem c = (CheckMenuItem) event.getSource();
         if(c.getId().toString().equals("checkMenuItemPL")){
             checkMenuItemEN.setSelected(false);
@@ -75,14 +103,6 @@ public class Controller {
             checkMenuItemPL.setSelected(false);
             loadLang("EN");
         }
-    }
-
-    @FXML
-    public void initialize() {
-        leftTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        rightTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        selectLanguage();
-        listRoots();
     }
 
     private void loadLang(String lang){
@@ -101,9 +121,11 @@ public class Controller {
         leftTableColumnName.setText(resourceBundle.getString("tableColumnName"));
         leftTableColumnSize.setText(resourceBundle.getString("tableColumnSize"));
         leftTableColumnDate.setText(resourceBundle.getString("tableColumnDate"));
+        leftTableColumnType.setText(resourceBundle.getString("tableColumnType"));
         rightTableColumnName.setText(resourceBundle.getString("tableColumnName"));
         rightTableColumnSize.setText(resourceBundle.getString("tableColumnSize"));
         rightTableColumnDate.setText(resourceBundle.getString("tableColumnDate"));
+        rightTableColumnType.setText(resourceBundle.getString("tableColumnType"));
     }
 
     private void selectLanguage(){
@@ -130,24 +152,31 @@ public class Controller {
         rightChoiceBox.getSelectionModel().selectFirst();
     }
 
-    private void readAndDisplayPath(String root, TableView<FileObject> tableView){
+    private void readAndDisplayPath(String path, TableView<FileObject> tableView){
         List<FileObject> fileObjectList = new ArrayList<>();
-        File file = new File(root);
+        File file = new File(path);
         File[] files = file.listFiles();
-        for (File enrtyFile : files){
-            if(!enrtyFile.isDirectory())
-                fileObjectList.add(new FileObject(enrtyFile.getName(), enrtyFile.length()+"", new Date(enrtyFile.lastModified() * 1000)));
+        for (File entryFile : files){
+            if(!entryFile.isDirectory())
+                fileObjectList.add(new FileObject(entryFile.getName(), new Long(entryFile.length()), new Date(entryFile.lastModified() * 1000), FilenameUtils.getExtension(entryFile.getName())));
             else
-                fileObjectList.add(new FileObject(enrtyFile.getName(), "<dir>", new Date(enrtyFile.lastModified() * 1000)));
+                fileObjectList.add(new FileObject(entryFile.getName(),  null ,new Date(entryFile.lastModified() * 1000), "<dir>"));
         }
         tableView.getItems().clear();
         for (FileObject fo : fileObjectList){
             tableView.getItems().add(fo);
         }
-        if (tableView == leftTableView)
-            leftCurrentPath = file.getPath() + "\\";
-        else
-            rightCurrentPath = file.getPath() + "\\";
+        try {
+            if (tableView == leftTableView) {
+                leftCurrentPath = file.getCanonicalPath() + "\\";
+                leftCurrentPathField.setText(leftCurrentPath);
+            } else {
+                rightCurrentPath = file.getCanonicalPath() + "\\";
+                rightCurrentPathField.setText(rightCurrentPath);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void leftChoiceBox_OnAction(ActionEvent event){
@@ -198,7 +227,7 @@ public class Controller {
     public void leftTableView_OnMouseClicked(MouseEvent event){
         if(event.getClickCount() == 2){
             String name = leftTableView.getSelectionModel().getSelectedItem().getName();
-            String path = leftCurrentPath + name + "\\";
+            String path = leftCurrentPath + name;
             readAndDisplayPath(path, leftTableView);
         }
     }
@@ -206,7 +235,7 @@ public class Controller {
     public void rightTableView_OnMouseClicked(MouseEvent event){
         if(event.getClickCount() == 2){
             String name = rightTableView.getSelectionModel().getSelectedItem().getName();
-            String path = rightCurrentPath + name + "\\";
+            String path = rightCurrentPath + name ;
             readAndDisplayPath(path, rightTableView);
         }
     }
@@ -222,12 +251,7 @@ public class Controller {
     }
 
     public void leftCopyButton_onAction(){
-        new Thread(){
-            @Override
-            public void run() {
-                copyFile(leftTableView, leftCurrentPath, rightCurrentPath);
-            }
-        }.start();
+        copyFile(leftTableView, leftCurrentPath, rightCurrentPath);
     }
 
     public void leftDeleteButton_onAction(){
@@ -240,27 +264,52 @@ public class Controller {
             File source = new File(leftCurrentPath + fileObject.getName());
             File dest = new File(rightCurrentPath + fileObject.getName());
             try {
-                if(source.toPath() != dest.toPath()){
-                    if (!source.isDirectory()) {
-                        FileUtils.copyFile(source, dest, true);
-                    }
-                    else{
-                        FileUtils.copyDirectory(source, dest, true);
+                if(!source.getCanonicalPath().toString().equals(dest.getCanonicalPath().toString())){
+                    if(isFileAlreadyThere(fileObject, new File(rightCurrentPath))) {
+                        String result = overwriteOrRename(fileObject);
+                        if (result.equals("O")) {
+                            copy(source, dest);
+                        } else if (result.equals("R")) {
+                            dest = getUniqueFilePath(fileObject, rightCurrentPath);
+                            copy(source, dest);
+                        }
+                    }else {
+                        copy(source, dest);
                     }
                 }
                 else{
-                    dest = makeUniqueFilePath(fileObject, rightCurrentPath);
-                    if (!source.isDirectory()) {
-                        FileUtils.copyFile(source, dest, true);
-                    }
-                    else{
-                        FileUtils.copyDirectory(source, dest, true);
-                    }
+                    dest = getUniqueFilePath(fileObject, rightCurrentPath);
+                    copy(source, dest);
                 }
             }catch(IOException e){
-                e.printStackTrace();
+              e.printStackTrace();
             }
         }
+    }
+
+    private void copy(File source, File dest){
+
+        copyTask = new Task() {
+            @Override
+            protected Void call() throws Exception {
+                    if (!source.isDirectory()) {
+                        FileUtils.copyFile(source, dest, true);
+                    } else {
+                        FileUtils.copyDirectory(source, dest, true);
+                    }
+                return null;
+            }
+        };
+        new Thread(copyTask).start();
+
+        copyTask.setOnSucceeded(e -> {
+            refreshTableViews();
+        });
+    }
+
+    private void refreshTableViews() {
+        readAndDisplayPath(leftCurrentPath, leftTableView);
+        readAndDisplayPath(rightCurrentPath, rightTableView);
     }
 
     private void deleteFile(TableView tableView, String currentPath){
@@ -274,26 +323,35 @@ public class Controller {
 
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == ButtonType.OK) {
-                // ... user chose OK
-                try {
-                    if (!source.isDirectory()) {
-                        FileUtils.forceDelete(source);
-                    } else {
-                        FileUtils.deleteDirectory(source);
-
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    delete(source);
             }
         }
     }
 
-    private File makeUniqueFilePath(FileObject fileObject, String destPath){
+    private void delete(File source){
+        deleteTask = new Task() {
+            @Override
+            protected Void call() throws Exception {
+                if (!source.isDirectory()) {
+                    FileUtils.forceDelete(source);
+                } else {
+                    FileUtils.deleteDirectory(source);
+                }
+                return null;
+            }
+        };
+        new Thread(deleteTask).start();
+
+        deleteTask.setOnSucceeded(e -> {
+            refreshTableViews();
+        });
+    }
+
+    private File getUniqueFilePath(FileObject fileObject, String destPath){
         String newFileName = fileObject.getName();
         File destFile = new File(destPath);
         File[] files = destFile.listFiles();
-        boolean unigue = false;
+        boolean unigue;
         int i = 1;
         do{
             unigue = true;
@@ -306,5 +364,40 @@ public class Controller {
             i++;
         }while(!unigue);
         return new File(destPath + newFileName);
+    }
+
+    private String overwriteOrRename(FileObject fileObject){
+        String res;
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(resourceBundle.getString("overwriteTitle"));
+        alert.setHeaderText(resourceBundle.getString("overwriteHeader"));
+        alert.setContentText(resourceBundle.getString("overwriteContent") + "\n" + fileObject.getName());
+
+        ButtonType buttonTypeOne = new ButtonType("Overwrite");
+        ButtonType buttonTypeTwo = new ButtonType("Rename");
+        ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo, buttonTypeCancel);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == buttonTypeOne){
+            res = "O";
+        } else if (result.get() == buttonTypeTwo) {
+            res = "R";
+        } else {
+            res = "C";
+        }
+        return  res;
+    }
+
+    private boolean isFileAlreadyThere(FileObject fileObject, File dest){
+        boolean isThere = false;
+        String fileName = fileObject.getName();
+        File[] files = dest.listFiles();
+        for (File file : files){
+            if (fileName.equals(file.getName())){
+                isThere = true;
+            }
+        }
+        return isThere;
     }
 }

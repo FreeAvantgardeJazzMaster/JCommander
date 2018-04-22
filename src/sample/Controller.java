@@ -18,10 +18,13 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 
 public class Controller {
@@ -72,6 +75,9 @@ public class Controller {
 
     @FXML
     public void initialize() {
+        leftCurrentPathField.setEditable(false);
+        rightCurrentPathField.setEditable(false);
+
         leftTableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
         leftTableColumnDate.setCellValueFactory(new PropertyValueFactory<>("date"));
         leftTableColumnSize.setCellValueFactory(new PropertyValueFactory<>("size"));
@@ -358,6 +364,7 @@ public class Controller {
     }
 
     private void executeDelete(List<FileToDelete> filesToDelete){
+        //File backup = new File(filesToDelete.get(0).getSource().toString() + "..\\backup");
         try {
             showWaitingBox(1);
         }catch (Exception e){
@@ -367,10 +374,13 @@ public class Controller {
             @Override
             protected Void call() throws Exception {
                 Thread.sleep(1000);
+                //FileUtils.forceMkdir(backup);
                 for (FileToDelete fileToDelete : filesToDelete) {
                     if (!fileToDelete.getSource().isDirectory()) {
+                        //FileUtils.copyFile(fileToDelete.getSource(), backup);
                         FileUtils.forceDelete(fileToDelete.getSource());
                     } else {
+                       // FileUtils.copyDirectory(fileToDelete.getSource(), backup);
                         FileUtils.deleteDirectory(fileToDelete.getSource());
                     }
                 }
@@ -381,6 +391,7 @@ public class Controller {
 
         deleteTask.setOnSucceeded(e -> {
             waitingBoxStage.close();
+            //cleanBackup(backup);
             refreshTableViews();
         });
         deleteTask.setOnCancelled(e -> {
@@ -494,5 +505,28 @@ public class Controller {
         //else if(taskType == 2)
                 //moveTask.cancel();
 
+    }
+
+    private void rollbackChanges(List<Object> files){
+        if (Object.class.getName().equals("FileToCopy")){
+            for (Object fileToCopy : files){
+                File file = ((FileToCopy) fileToCopy).getDest();
+                if (file.exists()){
+                    try{
+                        FileUtils.forceDelete(file);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }else if (Object.class.getName().equals("FileToDelete")){
+
+        }
+    }
+
+    private void cleanBackup(File backup){
+        List<FileToDelete> filesToDelete = new ArrayList<>();
+        filesToDelete.add(new FileToDelete("", backup));
+        executeDelete(filesToDelete);
     }
 }
